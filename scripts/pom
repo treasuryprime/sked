@@ -1,0 +1,4 @@
+#!/usr/local/bin/bash
+set -euo pipefail
+
+clojure -X:deps mvn-pom
