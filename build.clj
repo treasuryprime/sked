@@ -20,3 +20,14 @@
                :target-dir class-dir})
   (b/jar {:class-dir class-dir
           :jar-file jar-file}))
+
+(defn deploy [opts]
+  (jar opts)
+  (-> {:installer :remote
+       :artifact jar-file
+       :pom-file (b/pom-path {:lib lib :class-dir class-dir})}
+      (merge opts)
+      ((requiring-resolve 'deps-deploy.deps-deploy/deploy))))
+
+(defn install [opts]
+  (deploy (assoc opts :installer :local)))
