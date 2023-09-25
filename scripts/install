@@ -1,5 +1,0 @@
-#!/usr/local/bin/bash
-set -euo pipefail
-
-cd "$(dirname "$0")/.."
-clojure -X:deps mvn-install :jar '"target/sked.jar"'

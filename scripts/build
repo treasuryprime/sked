@@ -1,5 +1,5 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-clojure -T:pack library :basis '{:classpath {"src" {:path-key 1} "resources" {:path-key 1}}}' :path '"target/sked.jar"' :pom '"pom.xml"' :lib com.treasuryprime/sked
+clj -T:build "$@"

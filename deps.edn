@@ -21,5 +21,5 @@
   :test {:extra-paths ["test"]
          :extra-deps  {lambdaisland/kaocha {:mvn/version "1.85.1342"}}
          :main-opts   ["-m" "kaocha.runner"]}
-  :pack {:deps {io.github.juxt/pack.alpha {:git/sha "9ae4f8ff34427d0549fd5c58c0353e54523b3dfa"}}
-         :ns-default juxt.pack.cli.api}}}
+  :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.5" :git/sha "24f2894d69d14e58ce48eec59d531035303367d7"}}
+          :ns-default build}}}
