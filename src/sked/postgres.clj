@@ -5,18 +5,24 @@
    [honey.sql :as sql]
    [malli.instrument :as m.inst]
    [next.jdbc :as jdbc]
-   [next.jdbc.date-time] ; for java.time.Instant support
+   [next.jdbc.date-time] ; extends `SettableParameter` automatically
    [next.jdbc.prepare :as jdbc.prep]
    [next.jdbc.result-set :as jdbc.rs]
    [sked.protocol :as proto]
    [sked.schema :as schema])
   (:import
-   (java.sql PreparedStatement)
-   (org.postgresql.util PGobject)))
+   (java.sql ResultSet ResultSetMetaData Timestamp)))
 
 ;;;
 ;;; Utilities
 ;;;
+
+(defn column-reader
+  [^ResultSet rs ^ResultSetMetaData _ ^Integer i]
+  (when-let [value (.getObject rs i)]
+    (cond-> value
+      (instance? Timestamp value)
+      .toInstant)))
 
 (defn execute!
   {:malli/schema [:=>
@@ -25,7 +31,9 @@
   [m conn]
   (let [sql (sql/format m)]
     (log/trace {:sql sql, :sql-map m} "Querying database")
-    (jdbc/execute! conn (sql/format m) {:builder-fn jdbc.rs/as-unqualified-kebab-maps})))
+    (jdbc/execute! conn (sql/format m) {:builder-fn (jdbc.rs/as-maps-adapter
+                                                     jdbc.rs/as-unqualified-kebab-maps
+                                                     column-reader)})))
 
 (defn execute-1!
   {:malli/schema [:=>
@@ -35,12 +43,9 @@
   (first (execute! m conn)))
 
 (defn normalize-cron
-  "Sked expects `java.time.Instant` and `java.time.ZoneId` objects instead of
-   `java.sql.Timestamp` and string time zone IDs."
+  "Sked expects `java.time.ZoneId` objects instead of string time zone IDs."
   [cron]
-  (-> cron
-      (update :created-at #(.toInstant ^java.sql.Timestamp %))
-      (update :time-zone #(java.time.ZoneId/of %))))
+  (update cron :time-zone #(java.time.ZoneId/of %)))
 
 ;;;
 ;;; `Sked` backend
